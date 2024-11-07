@@ -1,6 +1,6 @@
 export const createUser = async (user: { username: string; email: string; password: string }) => {
     try {
-      const response = await fetch('/api/mongoRoute', {
+      const response = await fetch('/api/mongoRoute/users', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -22,7 +22,7 @@ export const createUser = async (user: { username: string; email: string; passwo
 
   export const signInUser = async (user: { username:string; email: string; password: string }) => {
     try {
-      const response = await fetch('/api/signIn', {
+      const response = await fetch('/api/mongoRoute/users/signIn', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -1,9 +1,15 @@
 import mongoose from "mongoose";
 const MONGODB_URI = process.env.MONGODB_URI || "";
 
+let isConnected=false;
 const connect = async ()=> {
+    if(isConnected){
+        console.log("Already connected to MongoDB");
+        return;
+    }
     try {
-        await mongoose.connect(MONGODB_URI);
+        const db= await mongoose.connect(MONGODB_URI);
+        isConnected=db.connection.readyState===1;
         console.log("Mongodb connection saccessfull !!!");
     } catch (error) {
         throw new Error("Error in connection to mongodb"+ error);

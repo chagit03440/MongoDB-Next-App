@@ -1,38 +1,59 @@
-import { NextApiRequest, NextApiResponse } from 'next';
+import { NextRequest, NextResponse } from 'next/server';
 import connect from '@/app/lib/db/mongodb';
 import Post from '@/app/lib/models/PostSchema';
 
 // GET a post by ID
-export const GET = async (req: NextApiRequest, res: NextApiResponse) => {
-    const { id } = req.query;
+export async function GET(req: NextRequest, { params }: { params: { postId: string } }) {
+    const { postId } = params;
+
     try {
         await connect();
-        const post = await Post.findById(id);
+        const post = await Post.findById(postId);
         if (!post) {
-            return res.status(404).json({ message: 'Post not found' });
+            return NextResponse.json({ message: 'Post not found' }, { status: 404 });
         }
-        return res.status(200).json(post);
+        return NextResponse.json(post, { status: 200 });
     } catch (error) {
-        return res.status(500).json({ message: 'Error fetching post', error });
+        console.error('Error fetching post:', error);
+        return NextResponse.json({ message: 'Error fetching post', error }, { status: 500 });
     }
-};
+}
 
 // PUT update a post by ID
-export const PUT = async (req: NextApiRequest, res: NextApiResponse) => {
-    const { id } = req.query;
-    const { title, content, author } = req.body;
+export async function PUT(req: NextRequest, { params }: { params: { postId: string } }) {
+    const { postId } = params;
+    const { title, content, author } = await req.json(); // Parse the request body
+
     try {
         await connect();
         const updatedPost = await Post.findByIdAndUpdate(
-            id,
+            postId,
             { title, content, author, updatedAt: new Date() },
             { new: true, runValidators: true }
         );
         if (!updatedPost) {
-            return res.status(404).json({ message: 'Post not found' });
+            return NextResponse.json({ message: 'Post not found' }, { status: 404 });
         }
-        return res.status(200).json(updatedPost);
+        return NextResponse.json(updatedPost, { status: 200 });
     } catch (error) {
-        return res.status(500).json({ message: 'Error updating post', error });
+        console.error('Error updating post:', error);
+        return NextResponse.json({ message: 'Error updating post', error }, { status: 500 });
     }
-};
+}
+
+// DELETE a post by ID
+export async function DELETE(req: NextRequest, { params }: { params: { postId: string } }) {
+    const { postId } = params;
+    console.log("id",postId);
+    try {
+        await connect();
+        const deletedBook = await Post.findByIdAndDelete(postId);
+        if (!deletedBook) {
+            return NextResponse.json({ message: 'Book not found' }, { status: 404 });
+        }
+        return NextResponse.json({ message: 'Book deleted successfully' }, { status: 200 });
+    } catch (error) {
+        console.error('Error deleting book:', error);
+        return NextResponse.json({ message: 'Error deleting book', error }, { status: 500 });
+    }
+}

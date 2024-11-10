@@ -1,27 +1,27 @@
-import { NextApiRequest, NextApiResponse } from 'next';
 import connect from '@/app/lib/db/mongodb';
-import Book from '@/app/lib//models/BookSchema';
+import Book from '@/app/lib/models/BookSchema';
+import { NextRequest, NextResponse } from 'next/server';
 
 // GET all books
-export const GET = async (req: NextApiRequest, res: NextApiResponse) => {
+export const GET = async () => {
     try {
         await connect();
         const books = await Book.find();
-        return res.status(200).json(books);
+        return NextResponse.json(books, { status: 200 });
     } catch (error) {
-        return res.status(500).json({ message: 'Error fetching books', error });
+        return NextResponse.json({ message: 'Error fetching books', error }, { status: 500 });
     }
 };
 
 // POST a new book
-export const POST = async (req: NextApiRequest, res: NextApiResponse) => {
+export const POST = async (req: NextRequest) => {
     try {
         await connect();
-        const { title, author, price } = req.body;
+        const { title, author, price } = await req.json(); // Use `await req.json()` for body parsing
         const newBook = new Book({ title, author, price });
         await newBook.save();
-        return res.status(201).json(newBook);
+        return NextResponse.json(newBook, { status: 201 });
     } catch (error) {
-        return res.status(500).json({ message: 'Error creating book', error });
+        return NextResponse.json({ message: 'Error creating book', error }, { status: 500 });
     }
 };

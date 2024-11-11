@@ -39,7 +39,6 @@ const handleEditEntity = async (entity: any) => {
     const updatedEntity = { ...editedEntity };
     try {
       await update(entity._id, updatedEntity);
-      // Reset the editing state
       setEditingEntityId(null);
       setEditedEntity({});
     } catch (error) {

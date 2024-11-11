@@ -1,91 +1,61 @@
 "use client";
-import React, { useState, useEffect } from 'react';
-import { createCar, getAllCars, updateCar, deleteCar } from '../services/carServices';
-import { createPost, getAllPosts, updatePost, deletePost } from '../services/postServices';
-import { createBook, getAllBooks, updateBook, deleteBook } from '../services/bookServices';
-
+import React, { useState } from 'react';
 type Entity = 'cars' | 'posts' | 'books';
 
 interface EntityListProps {
+  entities: any[];
   entityType: Entity;
+  entityServices: {
+    create: (entity: any) => void;
+    update: (id: string, entity: any) => void;
+    deleteEntity: (id: string) => void;
+  };
 }
 
-const EntityList: React.FC<EntityListProps> = ({ entityType }) => {
-  const [entities, setEntities] = useState<any[]>([]);
+
+const EntityList: React.FC<EntityListProps> = ({entities, entityType ,entityServices }) => {
   const [newEntity, setNewEntity] = useState<any>({});
   const [editingEntityId, setEditingEntityId] = useState<string | null>(null);
   const [editedEntity, setEditedEntity] = useState<any>({});
 
-  const entityServices = {
-    cars: {
-      getAll: getAllCars,
-      create: createCar,
-      update: updateCar,
-      deleteEntity: deleteCar,
-    },
-    posts: {
-      getAll: getAllPosts,
-      create: createPost,
-      update: updatePost,
-      deleteEntity: deletePost,
-    },
-    books: {
-      getAll: getAllBooks,
-      create: createBook,
-      update: updateBook,
-      deleteEntity: deleteBook,
-    },
-  };
+  const { create, update, deleteEntity } = entityServices || {};
 
-  const { getAll, create, update, deleteEntity } = entityServices[entityType];
-
-  useEffect(() => {
-    const fetchEntities = async () => {
-      try {
-        const entityList = await getAll();
-        setEntities(entityList);
-      } catch (error) {
-        console.error(`Failed to fetch ${entityType}:`, error);
-      }
-    };
-    fetchEntities();
-  }, [entityType]);
-
+  
   const handleAddEntity = async () => {
-    if (Object.values(newEntity).every(val => val)) {
-      try {
-        const entityToAdd = { ...newEntity };
-        const newEntityData = await create(entityToAdd);
-        setEntities((prevEntities) => [...prevEntities, newEntityData]);
-        setNewEntity({});
-      } catch (error) {
-        console.error(`Failed to add ${entityType}:`, error);
-      }
+  if (Object.values(newEntity).every(val => val)) {
+    try {
+      console.log("Adding entity:", newEntity);
+      create(newEntity);
+    } catch (error) {
+      console.error(`Failed to add ${entityType}:`, error);
     }
-  };
+  } else {
+    console.warn("Incomplete entity data:", newEntity);
+  }
+};
 
-  const handleEditEntity = async (entity: any) => {
-    if (editingEntityId === entity._id) {
-      const updatedEntity = { ...editedEntity };
-      try {
-        const updatedEntityData = await update(entity._id, updatedEntity);
-        setEntities((prevEntities) =>
-          prevEntities.map((e) => (e._id === entity._id ? updatedEntityData : e))
-        );
-        setEditingEntityId(null);
-      } catch (error) {
-        console.error(`Failed to update ${entityType}:`, error);
-      }
-    } else {
-      setEditingEntityId(entity._id);
-      setEditedEntity({ ...entity });
+const handleEditEntity = async (entity: any) => {
+  if (editingEntityId === entity._id) {
+    const updatedEntity = { ...editedEntity };
+    try {
+      await update(entity._id, updatedEntity);
+      // Reset the editing state
+      setEditingEntityId(null);
+      setEditedEntity({});
+    } catch (error) {
+      console.error(`Failed to update ${entityType}:`, error);
     }
-  };
+  } else {
+    // Start editing the entity
+    setEditingEntityId(entity._id);
+    setEditedEntity({ ...entity });
+  }
+};
+
 
   const handleDeleteEntity = async (entityId: string) => {
     try {
-      await deleteEntity(entityId);
-      setEntities((prevEntities) => prevEntities.filter((entity) => entity._id !== entityId));
+      deleteEntity(entityId);
     } catch (error) {
       console.error(`Failed to delete ${entityType}:`, error);
     }

@@ -4,7 +4,7 @@ import Post from '@/app/lib/models/PostSchema';
 
 // GET a post by ID
 export async function GET(req: NextRequest, { params }: { params: { postId: string } }) {
-    const { postId } = params;
+    const { postId } = await params;
 
     try {
         await connect();
@@ -21,7 +21,7 @@ export async function GET(req: NextRequest, { params }: { params: { postId: stri
 
 // PUT update a post by ID
 export async function PUT(req: NextRequest, { params }: { params: { postId: string } }) {
-    const { postId } = params;
+    const { postId } = await params;
     const { title, content, author } = await req.json(); // Parse the request body
 
     try {
@@ -43,7 +43,7 @@ export async function PUT(req: NextRequest, { params }: { params: { postId: stri
 
 // DELETE a post by ID
 export async function DELETE(req: NextRequest, { params }: { params: { postId: string } }) {
-    const { postId } = params;
+    const { postId } = await params;
     console.log("id",postId);
     try {
         await connect();
